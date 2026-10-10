@@ -1,0 +1,2 @@
+[console_scripts]
+manaba-deadline = manaba_deadline.cli:main

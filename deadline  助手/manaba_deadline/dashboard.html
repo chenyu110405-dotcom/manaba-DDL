@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="local-token" content="__TOKEN__">
+<title>作业泡泡 · 慢慢来</title>
+<style nonce="__NONCE__">
+:root{
+  color-scheme:light;
+  --ink:#2b2540;--muted:#7a7290;--line:#ece6f7;
+  --brand1:#8f7bff;--brand2:#ff7eb9;--brand:linear-gradient(135deg,#8f7bff,#ff7eb9);
+  --glass:rgb(255 255 255 / .76);--glass-strong:rgb(255 255 255 / .9);--glass-edge:rgb(255 255 255 / .85);
+  --hot:#ff4f9a;--urgent:#e8417f;--overdue:#d6384b;--done:#2c9c78;
+  --wallpaper:radial-gradient(circle at 14% 22%,rgb(255 255 255 / .75) 0 70px,transparent 72px),radial-gradient(circle at 86% 14%,rgb(255 255 255 / .55) 0 110px,transparent 112px),radial-gradient(circle at 74% 80%,rgb(255 255 255 / .5) 0 150px,transparent 152px),radial-gradient(circle at 28% 88%,rgb(255 255 255 / .45) 0 54px,transparent 56px),linear-gradient(135deg,#e3d9ff 0%,#fbdcef 52%,#d9eeff 100%);
+  --wall-blur:0px;--wall-veil:.25;
+}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;min-height:100vh;color:var(--ink);background:#efe9ff;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans","Hiragino Kaku Gothic ProN","Segoe UI","Microsoft YaHei","Yu Gothic UI",Meiryo,sans-serif;font-size:14px;line-height:1.5}
+h1,h2,h3,p{margin:0}a{color:inherit;text-underline-offset:3px}
+button,input{font:inherit}
+button{cursor:pointer;border:none;border-radius:999px;background:#fff;color:var(--ink);padding:9px 16px;font-weight:650;box-shadow:0 2px 8px rgb(90 60 160 / .12)}
+button.primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgb(255 110 180 / .32)}
+button:disabled{cursor:wait;opacity:.5}
+button:hover:not(:disabled){filter:brightness(.97)}
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--brand1);outline-offset:3px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Wallpaper: user image or preset, softened with blur and a white veil. */
+.wallpaper{position:fixed;inset:-48px;z-index:0;background-image:var(--wallpaper);background-size:cover;background-position:center;filter:blur(var(--wall-blur))}
+.wallpaper-veil{position:fixed;inset:0;z-index:0;background:rgb(255 255 255 / var(--wall-veil))}
+main{position:relative;z-index:1;max-width:1360px;margin:auto;padding:22px 28px 40px}
+.glass{background:var(--glass);border:1px solid var(--glass-edge);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);box-shadow:0 10px 30px rgb(80 50 140 / .1);border-radius:22px}
+
+/* Header */
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;margin-bottom:12px}
+.brand{display:flex;gap:13px;align-items:center;min-width:0}
+.brand-icon{width:46px;height:46px;flex:none;border-radius:50% 50% 50% 14px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:21px;font-weight:800;box-shadow:0 6px 16px rgb(143 123 255 / .35)}
+h1{font-size:23px;letter-spacing:.4px;font-weight:800;background:var(--brand);-webkit-background-clip:text;background-clip:text;color:transparent;width:max-content}
+.subtitle{color:var(--muted);font-size:12.5px;margin-top:1px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Overview chips */
+.overview{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.metric{border-radius:18px;padding:11px 16px;display:flex;align-items:center;gap:10px}
+.metric-number{font-size:26px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;color:#7b5cff}
+.metric-label{font-size:12px;color:var(--muted)}
+.metric.urgent .metric-number{color:var(--urgent)}.metric.overdue .metric-number{color:var(--overdue)}.metric.done .metric-number{color:var(--done)}
+
+.statusbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:8px 16px;border-radius:999px;color:var(--muted);font-size:12px}
+.status-message{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.status-dot{height:8px;width:8px;flex:none;background:#3fc58f;border-radius:50%;margin-top:5px;box-shadow:0 0 0 3px rgb(63 197 143 / .2)}
+.statusbar.old .status-dot{background:#f0a23c;box-shadow:0 0 0 3px rgb(240 162 60 / .2)}.statusbar.old .status-message{color:#9a6418}
+.statusbar.error .status-message{color:var(--overdue)}
+.last-sync{white-space:nowrap;font-variant-numeric:tabular-nums}
+
+details.settings{border-radius:18px;margin-bottom:10px}
+details.settings>summary{padding:10px 16px;color:var(--muted);font-size:12px;cursor:pointer}
+.settings-body{padding:2px 16px 15px;display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.settings-body label{display:block;flex:1;min-width:230px;font-size:12px;color:var(--muted)}
+.settings-body input{display:block;width:100%;padding:9px 13px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:5px}
+.privacy{width:100%;font-size:12px;color:var(--muted)}
+#diagnostics{font-size:12px;color:#9a5b1c;margin-bottom:10px;border-radius:18px;padding:9px 16px}#diagnostics summary{cursor:pointer}#issues{white-space:pre-wrap;padding:8px 0 2px}
+
+/* Two panes: chat list + chat room */
+.layout{display:grid;gap:16px;align-items:start;margin-top:14px}
+@media(min-width:1100px){.layout{grid-template-columns:minmax(340px,410px) minmax(0,1fr)}.chat-list{order:-1}}
+
+/* Chat room: priority tasks arrive as messages */
+.room{display:flex;flex-direction:column;min-height:440px;overflow:hidden;border-radius:24px;border:1px solid var(--glass-edge);background:rgb(255 255 255 / .14);box-shadow:0 10px 30px rgb(80 50 140 / .1)}
+.room-header{display:flex;align-items:center;gap:12px;padding:13px 18px;background:var(--glass-strong);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.room-avatar{width:42px;height:42px;flex:none;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:18px}
+.room-header h2{font-size:17px;font-weight:750}
+.room-sub{font-size:11.5px;color:var(--muted)}
+.priority-count{margin-left:auto;flex:none;background:var(--hot);color:#fff;font-size:12px;font-weight:700;padding:3px 11px;border-radius:999px;white-space:nowrap}
+.priority-count.read{background:#efeaf8;color:var(--muted)}
+.room-body{flex:1;display:flex;flex-direction:column;gap:16px;padding:18px 20px 26px}
+.date-pill,.detail-section-title{align-self:center;display:table;margin:0 auto;background:rgb(40 30 70 / .4);color:#fff;font-size:11.5px;font-weight:600;padding:4px 13px;border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.priority-list{display:flex;flex-direction:column;gap:16px}
+.room-empty{margin:auto;max-width:340px;background:rgb(255 255 255 / .85);padding:16px 22px;border-radius:20px;font-size:13px;color:var(--muted);text-align:center;box-shadow:0 4px 14px rgb(70 40 130 / .08)}
+
+.message{display:grid;grid-template-columns:46px minmax(0,1fr);gap:10px;align-items:start}
+.message-main{min-width:0}
+.message-name{display:inline-block;max-width:100%;font-size:12px;font-weight:700;line-height:18px;margin-bottom:5px;padding:0 9px;border-radius:999px;background:rgb(255 255 255 / .72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+.message-row{display:flex;align-items:flex-end;gap:7px;flex-wrap:wrap}
+.bubble{display:grid;gap:2px;min-width:0;flex:0 1 520px;background:rgb(255 255 255 / .96);border-radius:4px 20px 20px 20px;padding:12px 16px 13px;box-shadow:0 4px 14px rgb(70 40 130 / .1)}
+.priority-title{font-size:15px;font-weight:700;line-height:21px;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.priority-clock{font-size:21px;line-height:30px;font-weight:800;letter-spacing:-.3px;font-variant-numeric:tabular-nums;word-break:keep-all}
+.priority-clock.urgent{color:var(--urgent)}
+.priority-date{font-size:11.5px;color:var(--muted)}
+.bubble-link{justify-self:start;margin-top:7px;font-size:12px;padding:6px 13px;background:var(--soft);color:var(--accent);box-shadow:none}
+.message-meta{flex:none;max-width:96px;font-size:10.5px;line-height:1.35;color:var(--ink);background:rgb(255 255 255 / .66);padding:3px 7px;border-radius:9px}
+
+/* Avatars with aespa member photos and gradient ring */
+.course-avatar{position:relative;width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;color:var(--accent);border:2.5px solid transparent;background:linear-gradient(150deg,#fff,var(--soft)) padding-box,linear-gradient(135deg,var(--accent),var(--soft)) border-box;box-shadow:0 4px 12px rgb(70 40 130 / .14);overflow:hidden}
+.avatar-img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;transform:scale(1.02);transition:transform .2s ease}
+.avatar-fallback{position:absolute;inset:0;display:grid;place-items:center}
+.member-tag{display:inline-block;font-size:10.5px;font-weight:750;color:#fff;background:var(--brand);padding:1px 7px;border-radius:999px;margin-right:6px;vertical-align:middle;box-shadow:0 2px 6px rgb(255 110 180 / .28);line-height:16px}
+.color-0{--accent:#7b5cff;--soft:#ece6ff}.color-1{--accent:#e0559a;--soft:#ffe3f1}.color-2{--accent:#3d8bd9;--soft:#e0f0ff}.color-3{--accent:#1f9c80;--soft:#dcf6ee}.color-4{--accent:#df7444;--soft:#ffe8dc}.color-5{--accent:#b08600;--soft:#fff2c2}.color-6{--accent:#9b4fd1;--soft:#f3e3ff}.color-7{--accent:#e25c6b;--soft:#ffe1e4}.color-8{--accent:#1f90a5;--soft:#d9f3f7}.color-9{--accent:#c2508a;--soft:#fbe0ee}.color-10{--accent:#5a6ee0;--soft:#e3e7ff}.color-11{--accent:#5a962c;--soft:#e8f5d9}
+
+/* Chat list: one row per course */
+.chat-list{overflow:hidden}
+.list-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 8px}
+.list-header h2{font-size:17px;font-weight:750}
+.scope{font-size:11.5px;color:var(--muted);background:rgb(255 255 255 / .7);padding:2px 10px;border-radius:999px}
+#board{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 8px;padding:0 8px 10px}
+.chat-row{position:relative;display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;padding:12px 10px;border-radius:18px;min-width:0}
+.chat-row .course-avatar{width:54px;height:54px;font-size:21px}
+.chat-row.has-unread .course-avatar{background:linear-gradient(150deg,#fff,var(--soft)) padding-box,var(--brand) border-box;border-width:3px}
+.chat-main{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:20px 24px 18px 16px 24px;column-gap:8px;row-gap:2px;min-width:0}
+.course-title{font-size:14.5px;line-height:20px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unread-badge{justify-self:end;align-self:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--hot);color:#fff;font-size:11px;font-weight:750;line-height:20px;text-align:center;box-shadow:0 2px 6px rgb(255 79 154 / .35)}
+.chat-line{grid-column:1/-1;display:flex;align-items:baseline;min-width:0;white-space:nowrap;overflow:hidden}
+.summary-label{flex:none;font-size:11.5px;font-weight:650;color:var(--accent)}
+.summary-label:not(:empty)::after{content:"·";margin:0 5px;color:var(--muted)}
+.course-clock{font-size:16px;line-height:24px;font-weight:800;letter-spacing:-.2px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+.course-clock.urgent{color:var(--urgent)}.course-clock.overdue{color:var(--overdue)}.course-clock.done{color:var(--done)}
+.summary-title{grid-column:1/-1;font-size:12px;line-height:18px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-meta{grid-column:1/-1;display:flex;gap:8px;min-width:0;font-size:11px;line-height:16px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.summary-date{flex:none}
+.course-alert{color:var(--overdue);font-weight:650;overflow:hidden;text-overflow:ellipsis}
+.chat-foot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.course-count{font-size:11px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-button{flex:none;font-size:11.5px;padding:3px 12px;background:var(--soft);color:var(--accent);box-shadow:none}
+.note-button::after{content:"";position:absolute;inset:0;border-radius:18px}
+.empty-board{grid-column:1/-1;text-align:center;padding:44px 18px}
+.empty-board h3{font-size:18px;margin-bottom:6px}.empty-board p{color:var(--muted);font-size:13px}
+
+.stale-tag{font-size:10px;color:#976126;border:1px solid #e3c08f;background:#fff7dfe0;padding:0 5px;border-radius:6px;display:inline-block;margin-left:5px}
+
+/* Course chat room dialog */
+.course-dialog,.sheet{padding:0;border:none;color:var(--ink);box-shadow:0 24px 80px rgb(40 20 90 / .35)}
+.course-dialog{width:min(640px,calc(100vw - 24px));height:min(840px,90vh);border-radius:26px;overflow:hidden;background:#f1ecff}
+.course-dialog[open],.sheet[open]{display:flex;flex-direction:column}
+.course-dialog::backdrop,.sheet::backdrop{background:rgb(30 20 60 / .4)}
+.course-dialog::before{content:"";position:absolute;inset:-40px;z-index:0;background-image:linear-gradient(rgb(255 255 255 / var(--wall-veil)),rgb(255 255 255 / var(--wall-veil))),var(--wallpaper);background-size:cover;background-position:center;filter:blur(var(--wall-blur))}
+.dialog-heading{position:relative;z-index:1;flex:none;display:flex;align-items:center;gap:12px;padding:14px 16px 14px 18px;background:rgb(255 255 255 / .9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.dialog-heading>div{flex:1;min-width:0}
+.dialog-heading h2{font-size:17px;line-height:1.4;overflow-wrap:anywhere}
+.dialog-heading p{font-size:11.5px;color:var(--muted);margin-top:2px}
+.dialog-close{width:36px;height:36px;padding:0;font-size:20px;line-height:36px;flex:none;background:#f3effc;box-shadow:none}
+.dialog-body{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;padding:18px 16px 28px}
+.dialog-body .detail-section-title{margin-bottom:14px}
+.pending-tasks{display:flex;flex-direction:column;gap:12px}
+.task{max-width:560px;background:rgb(255 255 255 / .96);border-radius:4px 20px 20px 20px;padding:13px 16px;box-shadow:0 4px 14px rgb(70 40 130 / .1)}
+.task-heading{display:flex;align-items:start;justify-content:space-between;gap:8px}
+.task-title{font-size:14px;font-weight:700;line-height:1.55;overflow-wrap:anywhere;flex:1}
+.task-type{font-size:10.5px;font-weight:650;color:var(--accent);background:var(--soft);border-radius:999px;padding:2px 8px;white-space:nowrap;flex:none}
+.task-status{font-size:11.5px;color:var(--muted);margin:4px 0 2px}
+.task-clock{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;margin-bottom:2px}
+.task-clock.urgent{color:var(--urgent)}.task-clock.overdue{color:var(--overdue)}.task-clock.done{color:var(--done)}
+.task-date{font-size:11.5px;color:var(--muted)}.task-original{font-size:10.5px;color:var(--muted);margin-top:1px}
+.task-detail{font-size:12px;color:var(--muted);margin-top:8px}
+.task-detail summary{cursor:pointer;display:inline-block;list-style:none;color:var(--accent);font-weight:650;background:var(--soft);padding:3px 11px;border-radius:999px}
+.task-detail summary::-webkit-details-marker{display:none}
+.task-detail pre{font-family:inherit;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px;color:var(--ink);background:#f7f4ff;border-radius:12px;padding:11px 12px;margin:10px 0 0;max-height:340px;overflow:auto}
+.task-detail a{display:inline-block;margin-top:8px;font-size:11.5px;color:var(--accent)}
+.submitted-history{margin-top:20px}
+.submitted-history:first-child{margin-top:0}
+.submitted-history>summary{display:table;margin:0 auto 12px;list-style:none;cursor:pointer;background:rgb(255 255 255 / .88);color:var(--accent);padding:5px 15px;border-radius:999px;font-size:12px;font-weight:650;box-shadow:0 2px 8px rgb(70 40 130 / .08)}
+.submitted-history>summary::-webkit-details-marker{display:none}
+.submitted-history>summary::after{content:" ▸"}.submitted-history[open]>summary::after{content:" ▾"}
+.submitted-history .task{opacity:.88;margin-top:12px}
+.empty-course{display:table;margin:30px auto;background:rgb(255 255 255 / .88);padding:10px 18px;border-radius:999px;font-size:12.5px;color:var(--accent)}
+
+/* Wallpaper settings sheet */
+.sheet{width:min(460px,calc(100vw - 24px));max-height:92vh;border-radius:26px;background:rgb(255 255 255 / .96)}
+.sheet-body{padding:16px 20px;overflow:auto;display:grid;gap:13px}
+.wall-preview{position:relative;height:150px;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.wall-preview.dragging{outline:3px dashed var(--brand1);outline-offset:2px}
+.wall-preview-layer{position:absolute;inset:-24px;background-image:var(--wallpaper);background-size:cover;background-position:center;filter:blur(var(--wall-blur))}
+.wall-preview::after{content:"";position:absolute;inset:0;background:rgb(255 255 255 / var(--wall-veil))}
+.preview-msg{position:relative;z-index:1;display:flex;gap:9px;padding:18px}
+.preview-msg .course-avatar{width:36px;height:36px;font-size:14px}
+.preview-msg .message-name{font-size:11px}
+.preview-bubble{background:rgb(255 255 255 / .96);border-radius:4px 16px 16px 16px;padding:8px 12px;font-size:12px;box-shadow:0 3px 10px rgb(70 40 130 / .1)}
+.preview-bubble b{display:block;font-size:15px;color:var(--urgent)}
+.sheet-label{font-size:12px;font-weight:650;color:var(--muted)}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.swatch{display:grid;gap:4px;justify-items:center;padding:0;background:none;box-shadow:none;font-size:11px;font-weight:600;color:var(--muted);border-radius:14px}
+.swatch-chip{width:100%;height:62px;border-radius:14px;background-image:var(--swatch);background-size:cover;background-position:center;border:2px solid #fff;box-shadow:0 2px 8px rgb(80 50 140 / .16)}
+.swatch[aria-pressed="true"]{color:var(--brand1)}
+.swatch[aria-pressed="true"] .swatch-chip{box-shadow:0 0 0 3px var(--brand1),0 4px 12px rgb(143 123 255 / .35)}
+.upload-row{display:flex;gap:8px;flex-wrap:wrap}
+.upload-row button{flex:1}
+.range{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:12px;font-weight:650;color:var(--muted)}
+.range input{grid-column:1/-1;width:100%;accent-color:var(--brand1)}
+.range output{font-variant-numeric:tabular-nums}
+.sheet-note{font-size:11.5px;color:var(--muted)}
+.sheet-note.error{color:var(--overdue)}
+.sheet-foot{flex:none;display:flex;justify-content:space-between;gap:10px;padding:12px 20px 18px;border-top:1px solid var(--line)}
+
+.footer{display:table;margin:26px auto 0;font-size:11.5px;color:var(--muted);background:rgb(255 255 255 / .7);padding:4px 14px;border-radius:999px}
+
+@media(max-width:720px){
+  main{padding:12px 12px 30px}
+  .masthead{flex-direction:column;align-items:stretch;gap:12px}.actions button{flex:1}
+  .overview{grid-template-columns:repeat(2,1fr);gap:8px}.metric{padding:10px 13px}
+  .statusbar{flex-direction:column;align-items:flex-start;gap:3px;border-radius:18px}.last-sync{white-space:normal}
+  .room-body{padding:16px 12px 22px}.room-sub{display:none}
+  #board{grid-template-columns:1fr}
+  .dialog-body{padding:16px 12px 24px}
+}
+@media(prefers-reduced-motion:no-preference){
+  button{transition:filter .15s,transform .15s,box-shadow .15s}
+  button:active:not(:disabled){transform:scale(.97)}
+  .message{animation:pop .32s cubic-bezier(.2,.9,.3,1.25) both}
+  .bubble{transform-origin:top left}
+  .chat-row{transition:background-color .18s;animation:appear .24s ease both}
+  .course-dialog[open],.sheet[open]{animation:dialog-in .22s ease-out}
+  .course-dialog[open]::backdrop,.sheet[open]::backdrop{animation:backdrop-in .22s ease-out}
+  @media(hover:hover){.chat-row:hover{background:rgb(255 255 255 / .75)}.bubble{transition:transform .18s,box-shadow .18s}.message:hover .bubble{transform:translateY(-2px);box-shadow:0 8px 20px rgb(70 40 130 / .14)}}
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+  @keyframes appear{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @keyframes dialog-in{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes backdrop-in{from{opacity:0}to{opacity:1}}
+}
+@media(prefers-reduced-motion:no-preference) and (hover:hover){.chat-row:has(.note-button:not([hidden])){cursor:pointer}}
+</style>
+</head>
+<body>
+<div id="wallpaper" class="wallpaper" aria-hidden="true"></div><div class="wallpaper-veil" aria-hidden="true"></div>
+<main>
+<header class="masthead glass"><div class="brand"><div class="brand-icon" aria-hidden="true">✓</div><div><h1>作业泡泡</h1><p class="subtitle">先选一件，慢慢来。我陪你。</p></div></div><div class="actions"><button id="wallpaper-open" aria-haspopup="dialog">✦ 换背景</button><button id="login">登录 manaba</button><button id="sync" class="primary">刷新作业</button></div></header>
+<section class="overview" aria-label="课程表范围内的作业总览"><div class="metric glass"><strong class="metric-number" id="pending-total">—</strong><span class="metric-label">待处理</span></div><div class="metric glass urgent"><strong class="metric-number" id="urgent-total">—</strong><span class="metric-label">24 小时内截止</span></div><div class="metric glass overdue"><strong class="metric-number" id="overdue-total">—</strong><span class="metric-label">已逾期</span></div><div class="metric glass done"><strong class="metric-number" id="submitted-total">—</strong><span class="metric-label">已提交</span></div></section>
+<div id="status" class="statusbar glass" role="status"><div class="status-message"><span class="status-dot" aria-hidden="true"></span><span id="status-text">正在整理作业。</span></div><span id="last-sync" class="last-sync"></span></div>
+<details class="settings glass"><summary>登录与设置</summary><div class="settings-body"><label>manaba 网址<input id="url" type="url" autocomplete="off" spellcheck="false"></label><button id="account">更换账号</button><p class="privacy">仅整理周一至周六课程，每 10 分钟更新一次。更换账号会清空作业与登录状态；关闭应用后，登录状态不保留。</p></div></details>
+<details id="diagnostics" class="glass" hidden><summary id="issue-count">同步提示</summary><div id="issues"></div></details>
+<div class="layout">
+<section id="priority" class="room" aria-labelledby="priority-heading"><header class="room-header"><div class="room-avatar" aria-hidden="true">✦</div><div><h2 id="priority-heading">从这里开始</h2><p class="room-sub">还没交、还没截止的课题，按截止先后排好啦</p></div><span id="priority-count" class="priority-count read"></span></header><div class="room-body"><p id="today-label" class="date-pill"></p><div id="priority-list" class="priority-list" aria-label="未提交且尚未截止的课题"></div><p id="priority-empty" class="room-empty">登录后，最近要交的作业会像消息一样出现在这里。</p></div></section>
+<section class="chat-list glass" aria-labelledby="board-heading"><header class="list-header"><h2 id="board-heading">我的科目</h2><span id="scope" class="scope">我的课程</span></header><div id="board" aria-label="按科目分组的作业"></div></section>
+</div>
+<dialog id="course-dialog" class="course-dialog" aria-labelledby="course-dialog-title"><header class="dialog-heading"><span id="course-dialog-avatar" class="course-avatar" aria-hidden="true"></span><div><h2 id="course-dialog-title"></h2><p id="course-dialog-count"></p></div><button id="close-course" class="dialog-close" aria-label="关闭课程详情">×</button></header><div id="course-detail-list" class="dialog-body"></div></dialog>
+<dialog id="wallpaper-dialog" class="sheet" aria-labelledby="wallpaper-title"><header class="dialog-heading"><div><h2 id="wallpaper-title">聊天背景</h2><p>换成喜欢的照片或颜色，心情好一点。</p></div><button id="wallpaper-close" class="dialog-close" aria-label="关闭背景设置">×</button></header>
+<div class="sheet-body">
+<div id="wallpaper-preview" class="wall-preview color-1" aria-hidden="true"><div class="wall-preview-layer"></div><div class="preview-msg"><div class="course-avatar"><img class="avatar-img" src="/avatars/winter.jpg" alt="Winter"></div><div><span class="message-name"><span class="member-tag">Winter</span>サンプル授業</span><div class="preview-bubble">今天也辛苦啦 ♡<b>剩余 1天 3小时</b></div></div></div></div>
+<p class="sheet-label">预设背景</p>
+<div id="wallpaper-presets" class="swatches" role="group" aria-label="预设背景"></div>
+<div class="upload-row"><button id="wallpaper-upload" class="primary">上传图片</button><button id="wallpaper-remove">移除我的图片</button><input id="wallpaper-file" class="visually-hidden" type="file" accept="image/*" tabindex="-1" aria-hidden="true"></div>
+<label class="range" for="wallpaper-blur"><span>模糊</span><output id="blur-value" for="wallpaper-blur"></output><input id="wallpaper-blur" type="range" min="0" max="24" step="1"></label>
+<label class="range" for="wallpaper-veil"><span>柔光（让文字更清楚）</span><output id="veil-value" for="wallpaper-veil"></output><input id="wallpaper-veil" type="range" min="0" max="85" step="5"></label>
+<p id="wallpaper-message" class="sheet-note" role="status">背景只保存在这台电脑的浏览器里，不会上传。也可以把图片直接拖到预览框。</p>
+</div>
+<footer class="sheet-foot"><button id="wallpaper-reset">恢复默认</button><button id="wallpaper-done" class="primary">完成</button></footer></dialog>
+<p class="footer">做一点，歇一会儿，按自己的节奏来。</p>
+</main><script nonce="__NONCE__">__SCRIPT__</script></body></html>

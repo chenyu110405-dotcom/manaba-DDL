@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: manaba-deadline
+Version: 0.1.0
+Summary: 龙谷大学 manaba 作业只读同步与倒计时接口
+Requires-Python: >=3.10
+Requires-Dist: beautifulsoup4<5,>=4.12
+Requires-Dist: playwright<2,>=1.48
+Requires-Dist: tzdata>=2024.1
